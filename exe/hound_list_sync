@@ -1,0 +1,106 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "hound_list_sync"
+require "hound_list_sync/cli"
+
+require "logger"
+require "optparse"
+
+HELP = <<-TXT
+    Base config is regular hound config:
+        {
+          "dbpath" : "db",
+          "vcs-config" : {
+            "git": {
+              "ref" : "main"
+            }
+          },
+          "repos" : {
+            "Hound" : {
+              "url" : "https://github.com/hound-search/hound.git"
+            }
+          }
+        }
+
+    Extensions configs allow to specify how to enrich base config:
+        {
+          "repos": {
+            "hound_list_sync": {
+              "url": "https://github.com/DmitryBochkarev/hound_list_sync.git"
+            }
+          },
+          "lists": {
+            "wallarm": {
+              "hosting": "github",
+              "org": "wallarm",
+              "credentials": {
+                "login": "DmitryBochkarev",
+                "pass": "[OAuth Token]"
+              }
+            },
+            "example.com": {
+              "hosting": "gitlab",
+              "api_endpoint": "https://gitlab.example.com",
+              "token": "[OAuth Token]",
+              "allow_list": [
+                "example/site/", "example/backoffice/"
+              ],
+              "block_list": [
+                ".*secrets.*"
+              ]
+            }
+          }
+        }
+TXT
+
+options = { extensions: [] }
+opt_parser = OptionParser.new do |opts|
+  opts.banner = "Usage: hound_list_sync [options]"
+
+  opts.on("--base=FILE", "Base Hound Config(required)") do |v|
+    options[:base] = v
+  end
+
+  opts.on("--out=FILE", "Resulting Hound Config(required)") do |v|
+    options[:out] = v
+  end
+
+  opts.on("--extension=FILE", "Extension config, allow to have multiple") do |v|
+    options[:extensions].push(v)
+  end
+
+  opts.on("-h", "--help", "Print this help") do |_v|
+    puts opts
+    puts
+    puts HELP
+
+    exit
+  end
+end
+
+opt_parser.parse!(ARGV)
+
+p options
+unless options[:base]
+  puts "missing --base=FILE"
+  puts opt_parser
+
+  exit(1)
+end
+
+unless options[:out]
+  puts "missing --out=FILE"
+  puts opt_parser
+
+  exit(1)
+end
+
+logger = Logger.new($stdout)
+
+HoundListSync::CLI.new(
+  options.fetch(:base),
+  options.fetch(:extensions),
+  options.fetch(:out),
+  logger: logger
+).run
