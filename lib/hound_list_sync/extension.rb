@@ -23,7 +23,7 @@ module HoundListSync
       Repositories::Join.new(repositories)
     end
 
-    def list_repositories(name, conf)
+    def list_repositories(name, conf) # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       repositories =
         case conf["hosting"]
         when "github"
@@ -43,14 +43,14 @@ module HoundListSync
           raise "Invalid config #{name}: #{conf}"
         end
 
-      if conf["allow_list"] && conf['allow_list'].is_a?(Array) && conf["allow_list"].any?
+      if conf["allow_list"].is_a?(Array) && conf["allow_list"]&.any?
         repositories = Repositories::AllowList.new(
           repositories,
           names: conf["allow_list"]
         )
       end
 
-      if conf["block_list"] && conf['block_list'].is_a?(Array) && conf["block_list"].any?
+      if conf["block_list"].is_a?(Array) && conf["block_list"]&.any?
         repositories = Repositories::BlockList.new(
           repositories,
           names: conf["block_list"]

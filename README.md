@@ -21,7 +21,7 @@ gem install hound_list_sync
 
 <details>
 
-<summary>hound_list_sync --help<summary>
+<summary>hound_list_sync --help</summary>
 
 ```txt
 Usage: hound_list_sync [options]
