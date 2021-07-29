@@ -81,7 +81,6 @@ end
 
 opt_parser.parse!(ARGV)
 
-p options
 unless options[:base]
   puts "missing --base=FILE"
   puts opt_parser
